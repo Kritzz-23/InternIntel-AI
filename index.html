@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InternIntel AI — Intelligent Internship Discovery & Semantic Skill Matcher</title>
+  <meta name="description" content="AI-powered internship discovery platform by Kritika Giri. Automated resume parsing, semantic compatibility scoring, and application lifecycle pipeline.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-base: #FFFFFF;
+      --bg-subtle: #F9FAFB;
+      --bg-card: #FFFFFF;
+      --text-main: #18181B;
+      --text-muted: #71717A;
+      --border-subtle: #E5E7EB;
+      --border-medium: #D1D5DB;
+      --accent: #18181B;
+      --emerald: #10B981;
+      --emerald-light: #ECFDF5;
+      --blue: #2563EB;
+      --blue-light: #EFF6FF;
+      --amber: #D97706;
+      --amber-light: #FFFBEB;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.08);
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: #18181B;
+      color: #FFF;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .brand-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--emerald);
+      background: var(--emerald-light);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-btn {
+      padding: 6px 14px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .nav-btn-secondary {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+    .nav-btn-secondary:hover { background: #F3F4F6; }
+    .nav-btn-primary {
+      background: #18181B;
+      color: #FFFFFF;
+      border: 1px solid #18181B;
+    }
+    .nav-btn-primary:hover { background: #27272A; }
+
+    main {
+      flex: 1;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .intro-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .intro-text h1 {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .intro-text p {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      max-width: 720px;
+    }
+
+    /* Scoreboard */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 768px) {
+      .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .metric-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    /* Semantic Matcher Card */
+    .matcher-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .matcher-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .matcher-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .profile-presets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .profile-btn {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #FFFFFF;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .profile-btn:hover {
+      color: var(--text-main);
+      border-color: var(--border-medium);
+      background: var(--bg-subtle);
+    }
+    .profile-btn.active {
+      background: #18181B;
+      color: #FFFFFF;
+      border-color: #18181B;
+    }
+
+    .skills-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .skills-tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .skill-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    /* Filter Toolbar */
+    .filter-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 6px 14px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #FFFFFF;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-tab:hover {
+      color: var(--text-main);
+      border-color: var(--border-medium);
+    }
+    .filter-tab.active {
+      background: #18181B;
+      color: #FFFFFF;
+      border-color: #18181B;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 320px;
+    }
+    .search-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.86rem;
+      width: 100%;
+    }
+
+    /* Opportunities Grid */
+    .opps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .opps-grid { grid-template-columns: 1fr; }
+    }
+
+    .opp-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.2s ease;
+    }
+    .opp-card:hover {
+      border-color: var(--border-medium);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .opp-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .opp-company {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .opp-role {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 2px;
+    }
+    .match-badge {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .match-high { background: var(--emerald-light); color: var(--emerald); }
+    .match-med { background: var(--amber-light); color: var(--amber); }
+
+    .opp-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .opp-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .opp-skills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tag-match {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--emerald-light);
+      color: var(--emerald);
+    }
+    .tag-missing {
+      font-size: 0.74rem;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .opp-actions {
+      display: flex;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: auto;
+    }
+    .btn-apply {
+      flex: 1;
+      padding: 8px 12px;
+      background: #18181B;
+      color: #FFFFFF;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s ease;
+    }
+    .btn-apply:hover { background: #27272A; }
+    .btn-track {
+      padding: 8px 12px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+    .btn-track:hover { background: var(--bg-subtle); }
+
+    /* Pipeline Drawer */
+    .pipeline-section {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .pipeline-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .kanban-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 860px) {
+      .kanban-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .kanban-col {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 180px;
+    }
+    .kanban-header {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .kanban-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.82rem;
+    }
+    .kanban-card-title {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .kanban-card-sub {
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      margin-top: 2px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 24px;
+      background: #FFFFFF;
+      margin-top: auto;
+    }
+    .footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <a href="https://kritzz-23.github.io/" class="brand">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <span class="brand-title">InternIntel AI</span>
+          <span class="brand-tag">v2.1 &bull; LIVE</span>
+        </div>
+      </a>
+      <div class="header-nav">
+        <a href="https://kritzz-23.github.io/" class="nav-btn nav-btn-secondary">← Portfolio</a>
+        <a href="https://github.com/Kritzz-23/InternIntel-AI" target="_blank" class="nav-btn nav-btn-secondary">GitHub Repo 🐙</a>
+        <a href="https://kritzz-23.github.io/SentinelAI/" class="nav-btn nav-btn-primary">SentinelAI 🚀</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main>
+    <!-- Intro Banner -->
+    <div class="intro-banner">
+      <div class="intro-text">
+        <h1>Internship Intelligence &amp; Skill Compatibility Engine</h1>
+        <p>
+          Semantic career matching system that extracts candidate skill vectors, scores technical alignment against live internship requirements, and tracks application pipelines in real time.
+        </p>
+      </div>
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.84rem;">
+        <div><strong>Candidate:</strong> Kritika Giri &bull; 4th Year B.Tech</div>
+        <div style="color: var(--text-muted);">Brainware University (CGPA 8.54 / 10)</div>
+      </div>
+    </div>
+
+    <!-- Metrics Bar -->
+    <div class="metrics-bar">
+      <div class="metric-card">
+        <div class="metric-label">Opportunities Ingested</div>
+        <div class="metric-value" id="stat-total">8</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Compatibility Score</div>
+        <div class="metric-value" id="stat-avg-match" style="color: var(--emerald);">91%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Applications</div>
+        <div class="metric-value" id="stat-applied" style="color: var(--text-main);">4</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Target Role Readiness</div>
+        <div class="metric-value" style="color: var(--emerald);">High</div>
+      </div>
+    </div>
+
+    <!-- Candidate Semantic Matcher Deck -->
+    <div class="matcher-card">
+      <div class="matcher-header">
+        <div class="matcher-title">
+          <span>🧠 Candidate Skill Vector</span>
+          <span style="font-size: 0.82rem; font-weight: normal; color: var(--text-muted);">(Select profile preset to re-calculate matching scores)</span>
+        </div>
+        <div class="profile-presets">
+          <button class="profile-btn active" data-profile="fullstack">Kritika: Full Stack &amp; AI</button>
+          <button class="profile-btn" data-profile="frontend">Frontend UI Specialist</button>
+          <button class="profile-btn" data-profile="backend">Backend &amp; Python APIs</button>
+        </div>
+      </div>
+
+      <div class="skills-input-wrapper">
+        <div class="skills-tag-cloud" id="active-skills-cloud">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="filter-toolbar">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All Opportunities</button>
+        <button class="filter-tab" data-filter="fullstack">Full Stack</button>
+        <button class="filter-tab" data-filter="backend">Backend &amp; AI</button>
+        <button class="filter-tab" data-filter="frontend">Frontend</button>
+      </div>
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="opp-search" class="search-input" placeholder="Search company, title, or skill (e.g. React, Python)...">
+      </div>
+    </div>
+
+    <!-- Opportunities Grid -->
+    <div class="opps-grid" id="opps-container">
+      <!-- Injected dynamically -->
+    </div>
+
+    <!-- Pipeline Kanban Tracker -->
+    <div class="pipeline-section">
+      <div class="pipeline-title">📋 Application Lifecycle Kanban</div>
+      <div class="kanban-grid">
+        <div class="kanban-col" id="col-saved">
+          <div class="kanban-header">
+            <span>Saved</span>
+            <span class="count-saved">1</span>
+          </div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Razorpay</div>
+            <div class="kanban-card-sub">Backend Engineer Intern &bull; ₹40k/mo</div>
+          </div>
+        </div>
+
+        <div class="kanban-col" id="col-applied">
+          <div class="kanban-header">
+            <span>Applied</span>
+            <span class="count-applied">2</span>
+          </div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Zomato</div>
+            <div class="kanban-card-sub">Full Stack Developer Intern</div>
+          </div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Swiggy</div>
+            <div class="kanban-card-sub">Python &amp; ML Engineer Intern</div>
+          </div>
+        </div>
+
+        <div class="kanban-col" id="col-interview">
+          <div class="kanban-header">
+            <span>Interviewing</span>
+            <span class="count-interview">1</span>
+          </div>
+          <div class="kanban-card" style="border-left: 3px solid var(--amber);">
+            <div class="kanban-card-title">Postman</div>
+            <div class="kanban-card-sub">API Platform Engineer Intern</div>
+          </div>
+        </div>
+
+        <div class="kanban-col" id="col-offer">
+          <div class="kanban-header">
+            <span>Offer Received</span>
+            <span class="count-offer">1</span>
+          </div>
+          <div class="kanban-card" style="border-left: 3px solid var(--emerald); background: var(--emerald-light);">
+            <div class="kanban-card-title" style="color: #065F46;">Innovaccer</div>
+            <div class="kanban-card-sub">Software Development Engineer Intern</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div>&copy; 2026 Kritika Giri &bull; Full Stack Developer &bull; InternIntel AI</div>
+      <div>
+        <a href="https://kritzz-23.github.io/" style="color: inherit; margin-right: 14px;">Portfolio</a>
+        <a href="https://github.com/Kritzz-23/InternIntel-AI" target="_blank" style="color: inherit; margin-right: 14px;">GitHub</a>
+        <a href="https://kritzz-23.github.io/SentinelAI/" style="color: inherit;">SentinelAI Live</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const PROFILES = {
+      fullstack: ["Python", "FastAPI", "React", "JavaScript", "SQL", "PostgreSQL", "Docker", "REST API", "Git"],
+      frontend: ["React", "JavaScript", "HTML5", "CSS3", "Vite", "Tailwind CSS", "Git", "REST API"],
+      backend: ["Python", "FastAPI", "SQL", "PostgreSQL", "Docker", "AsyncIO", "REST API", "Git"]
+    };
+
+    let activeProfileKey = "fullstack";
+    let activeSkills = [...PROFILES.fullstack];
+
+    const INTERNSHIPS = [
+      {
+        id: "postman-api",
+        company: "Postman",
+        role: "API Platform Developer Intern",
+        track: "backend",
+        location: "Bangalore (Hybrid)",
+        stipend: "₹50,000 / month",
+        duration: "6 Months",
+        skills: ["Python", "FastAPI", "REST API", "Docker", "SQL"],
+        description: "Build developer tooling, asynchronous telemetry endpoints, and high-volume REST services."
+      },
+      {
+        id: "zomato-fs",
+        company: "Zomato",
+        role: "Full Stack Engineer Intern",
+        track: "fullstack",
+        location: "Remote / Gurgaon",
+        stipend: "₹45,000 / month",
+        duration: "6 Months",
+        skills: ["React", "Python", "JavaScript", "PostgreSQL", "REST API"],
+        description: "Design customer-facing web interfaces coupled with backend microservice workflows."
+      },
+      {
+        id: "swiggy-ml",
+        company: "Swiggy",
+        role: "Applied AI / Python Intern",
+        track: "backend",
+        location: "Bangalore",
+        stipend: "₹55,000 / month",
+        duration: "3-6 Months",
+        skills: ["Python", "FastAPI", "Docker", "SQL", "Git"],
+        description: "Contribute to predictive order dispatch algorithms, NLP log classification, and caching."
+      },
+      {
+        id: "cred-fe",
+        company: "CRED",
+        role: "Frontend Design Engineer Intern",
+        track: "frontend",
+        location: "Bangalore",
+        stipend: "₹60,000 / month",
+        duration: "6 Months",
+        skills: ["React", "JavaScript", "HTML5", "CSS3", "Tailwind CSS"],
+        description: "Craft ultra-smooth web micro-interactions, responsive dashboard components, and web design systems."
+      },
+      {
+        id: "razorpay-be",
+        company: "Razorpay",
+        role: "Core Backend Engineer Intern",
+        track: "backend",
+        location: "Bangalore",
+        stipend: "₹45,000 / month",
+        duration: "6 Months",
+        skills: ["Python", "FastAPI", "PostgreSQL", "Docker", "Git"],
+        description: "Support transactional payment rails, ACID database integrity, and idempotent webhook listeners."
+      },
+      {
+        id: "innovaccer-fs",
+        company: "Innovaccer",
+        role: "Software Development Engineer Intern",
+        track: "fullstack",
+        location: "Noida / Remote",
+        stipend: "₹40,000 / month",
+        duration: "6 Months",
+        skills: ["React", "JavaScript", "Python", "SQL", "REST API"],
+        description: "Develop enterprise healthcare SaaS portals with sub-second page rendering and data analytics."
+      },
+      {
+        id: "groww-web",
+        company: "Groww",
+        role: "Web Application Engineer Intern",
+        track: "frontend",
+        location: "Bangalore",
+        stipend: "₹45,000 / month",
+        duration: "6 Months",
+        skills: ["React", "JavaScript", "Tailwind CSS", "REST API", "Git"],
+        description: "Build financial charts, portfolio rebalancing calculators, and accessible investment interfaces."
+      },
+      {
+        id: "hasura-fs",
+        company: "Hasura",
+        role: "Full Stack Open Source Intern",
+        track: "fullstack",
+        location: "Remote (Global)",
+        stipend: "₹50,000 / month",
+        duration: "6 Months",
+        skills: ["React", "PostgreSQL", "Docker", "Python", "GraphQL"],
+        description: "Create developer documentation demos, benchmark relational performance, and maintain SDKs."
+      }
+    ];
+
+    const skillsCloud = document.getElementById('active-skills-cloud');
+    const profileBtns = document.querySelectorAll('.profile-btn');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const oppsContainer = document.getElementById('opps-container');
+    const searchInput = document.getElementById('opp-search');
+    const avgMatchStat = document.getElementById('stat-avg-match');
+
+    let activeFilter = 'all';
+    let searchQuery = '';
+
+    function renderSkillChips() {
+      skillsCloud.innerHTML = '';
+      activeSkills.forEach(skill => {
+        const chip = document.createElement('span');
+        chip.className = 'skill-chip';
+        chip.innerHTML = `<span>✓</span> <span>${skill}</span>`;
+        skillsCloud.appendChild(chip);
+      });
+    }
+
+    function calculateMatch(requiredSkills) {
+      const candidateSet = new Set(activeSkills.map(s => s.toLowerCase()));
+      let matched = [];
+      let missing = [];
+
+      requiredSkills.forEach(req => {
+        if (candidateSet.has(req.toLowerCase())) {
+          matched.push(req);
+        } else {
+          missing.push(req);
+        }
+      });
+
+      const score = Math.round((matched.length / requiredSkills.length) * 100);
+      return { score, matched, missing };
+    }
+
+    function renderOpportunities() {
+      oppsContainer.innerHTML = '';
+      let totalScores = 0;
+      let count = 0;
+
+      const filtered = INTERNSHIPS.filter(opp => {
+        const matchFilter = activeFilter === 'all' || opp.track === activeFilter;
+        if (!matchFilter) return false;
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return opp.company.toLowerCase().includes(q) ||
+               opp.role.toLowerCase().includes(q) ||
+               opp.skills.some(s => s.toLowerCase().includes(q));
+      });
+
+      filtered.forEach(opp => {
+        const { score, matched, missing } = calculateMatch(opp.skills);
+        totalScores += score;
+        count++;
+
+        const card = document.createElement('div');
+        card.className = 'opp-card';
+        card.innerHTML = `
+          <div class="opp-top">
+            <div>
+              <div class="opp-company">${opp.company}</div>
+              <div class="opp-role">${opp.role}</div>
+            </div>
+            <span class="match-badge ${score >= 80 ? 'match-high' : 'match-med'}">
+              ${score}% Match
+            </span>
+          </div>
+
+          <div class="opp-meta">
+            <span>📍 ${opp.location}</span>
+            <span>💰 ${opp.stipend}</span>
+            <span>⏱️ ${opp.duration}</span>
+          </div>
+
+          <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5;">${opp.description}</p>
+
+          <div class="opp-skills">
+            ${matched.map(m => `<span class="tag-match">✓ ${m}</span>`).join('')}
+            ${missing.map(m => `<span class="tag-missing">+ ${m}</span>`).join('')}
+          </div>
+
+          <div class="opp-actions">
+            <button class="btn-apply" onclick="trackRole('${opp.company} - ${opp.role}')">Apply Now 🚀</button>
+            <button class="btn-track" onclick="saveRole('${opp.company}')">Save ⭐</button>
+          </div>
+        `;
+        oppsContainer.appendChild(card);
+      });
+
+      if (count > 0) {
+        avgMatchStat.textContent = `${Math.round(totalScores / count)}%`;
+      }
+    }
+
+    function trackRole(title) {
+      alert(`Applied to: ${title}!\nYour profile (Kritika Giri - B.Tech Final Year, CGPA 8.54) was queued for interview scheduling.`);
+    }
+
+    function saveRole(company) {
+      alert(`Saved ${company} to your opportunity tracker.`);
+    }
+
+    profileBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        profileBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeProfileKey = btn.getAttribute('data-profile');
+        activeSkills = [...PROFILES[activeProfileKey]];
+        renderSkillChips();
+        renderOpportunities();
+      });
+    });
+
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeFilter = tab.getAttribute('data-filter');
+        renderOpportunities();
+      });
+    });
+
+    searchInput.addEventListener('input', () => {
+      searchQuery = searchInput.value.trim();
+      renderOpportunities();
+    });
+
+    // Initial setup
+    renderSkillChips();
+    renderOpportunities();
+  </script>
+</body>
+</html>

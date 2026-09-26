@@ -1,5 +1,11 @@
 # 🚀 InternIntel-AI
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-10B981?style=for-the-badge&logo=github)](https://kritzz-23.github.io/InternIntel-AI/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react)](https://react.dev)
+
+> 🚀 **Interactive Live Application:** [https://kritzz-23.github.io/InternIntel-AI/](https://kritzz-23.github.io/InternIntel-AI/)
+
 ### AI-Powered Internship Intelligence Platform
 
 InternIntel-AI is an AI-driven internship intelligence platform designed to help students discover, manage, and track internship opportunities efficiently. The platform provides internship search, authentication, and role-based access control for students and recruiters.
